@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TRAQUE URBAINE — Détection Tactique sur Grille</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="cyber-theme">
+  <div class="crt-overlay"></div>
+  <div class="vignette"></div>
+
+  <!-- PARTICLES & FX CANVAS -->
+  <canvas id="fx-canvas"></canvas>
+
+  <div id="app" class="app-container">
+    <!-- TOP TACTICAL HUD -->
+    <header class="hud-header">
+      <div class="hud-brand">
+        <div class="hud-logo-icon"></div>
+        <div>
+          <h1 class="hud-title">TRAQUE URBAINE</h1>
+          <div class="hud-subtitle">PARKING SECTOR // RADAR TACTICAL GRID</div>
+        </div>
+      </div>
+
+      <div class="hud-stats-bar">
+        <div class="hud-stat-box">
+          <span class="stat-label">MODE</span>
+          <span id="stat-mode" class="stat-value text-cyan">MENU</span>
+        </div>
+        <div class="hud-stat-box">
+          <span class="stat-label">SCANS ÉMIS</span>
+          <span id="stat-scans" class="stat-value text-yellow">0</span>
+        </div>
+        <div class="hud-stat-box">
+          <span class="stat-label">CIBLES RESTANTES</span>
+          <span id="stat-cibles" class="stat-value text-red">0/0</span>
+        </div>
+      </div>
+
+      <div class="hud-actions">
+        <button id="btn-audio-toggle" class="btn-icon" title="Activer / Couper le son">
+          <span class="icon-speaker">🔊</span>
+          <span id="lbl-audio">SON ON</span>
+        </button>
+        <button id="btn-menu-open" class="btn-secondary">
+          <span>MENU</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN GAME AREA -->
+    <main class="tactical-layout">
+      <!-- LEFT PANEL : TARGET DOSSIERS -->
+      <aside class="panel-left glass-card">
+        <div class="panel-header">
+          <span class="tag-live">ACTIF</span>
+          <h2>CIBLES PRIORITAIRES</h2>
+        </div>
+        <div id="target-list" class="target-cards-container">
+          <!-- Injecté dynamiquement -->
+        </div>
+        <div class="radar-action-zone" id="radar-zone">
+          <button id="btn-radar" class="btn-radar-emp">
+            <div class="radar-pulse-ring"></div>
+            <div class="btn-radar-content">
+              <span class="radar-icon">📡</span>
+              <div>
+                <div class="radar-btn-title">RADAR EMP GPS</div>
+                <div class="radar-btn-sub">BALAYAGE ZONE 3×3 (1 USAGE)</div>
+              </div>
+            </div>
+          </button>
+          <div id="radar-status-text" class="radar-status-badge">PRÊT</div>
+        </div>
+      </aside>
+
+      <!-- CENTER : RADAR & PARKING GRID -->
+      <section class="grid-center-area">
+        <div class="radar-grid-wrapper">
+          <div class="grid-frame-header">
+            <span class="frame-coord">LAT 48.8566 // LON 2.3522</span>
+            <span class="frame-tag">SOUS-SOL NIVEAU -3 · BROUILLARD INDUSTRIEL</span>
+          </div>
+
+          <div class="grid-board-container" id="grid-container">
+            <!-- CANVAS SWEEP RADAR -->
+            <canvas id="radar-sweep-canvas"></canvas>
+
+            <!-- GRILLE DE CASES -->
+            <div id="parking-grid" class="parking-grid"></div>
+
+            <!-- RETICULE DE VISEE TACTIQUE -->
+            <div id="radar-reticle" class="radar-reticle hidden">
+              <div class="reticle-box"></div>
+              <span class="reticle-label">ZONE EMP 3×3</span>
+            </div>
+          </div>
+
+          <div class="grid-frame-footer">
+            <div class="legend-items">
+              <span class="legend-pill empty"><i></i> Case Vide</span>
+              <span class="legend-pill hit"><i></i> Cible Touchée</span>
+              <span class="legend-pill wreck"><i></i> Épave Neutralisée</span>
+              <span class="legend-pill radar-hit"><i></i> Écho Radar</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT PANEL : TACTICAL FEED & RECON -->
+      <aside class="panel-right glass-card">
+        <div class="panel-header">
+          <span class="tag-recon">SURVEILLANCE</span>
+          <h2>TERMINAL DEBOGUE & RECON</h2>
+        </div>
+
+        <div class="recon-status-box">
+          <div class="recon-label">DERNIÈRE DÉTECTION</div>
+          <div id="recon-last-event" class="recon-val-event">EN ATTENTE DE DÉPLOIEMENT...</div>
+        </div>
+
+        <div class="terminal-container">
+          <div class="terminal-bar">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+            <span class="term-title">SEC_SYS_LOG.sh</span>
+          </div>
+          <div id="terminal-feed" class="terminal-logs">
+            <p class="log-info">> Connexion au système de télédétection établie.</p>
+            <p class="log-info">> En attente du premier flash radar...</p>
+          </div>
+        </div>
+
+        <div class="records-summary-card">
+          <div class="rec-title">MEILLEURS RECORDS SECTEUR</div>
+          <div class="rec-row">
+            <span>Rallye Urbain (5×5) :</span>
+            <strong id="rec-rallye-val" class="text-cyan">-- scans</strong>
+          </div>
+          <div class="rec-row">
+            <span>Grand Prix (8×8) :</span>
+            <strong id="rec-grand-prix-val" class="text-yellow">-- scans</strong>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- MODAL : SELECTION DE MODE DE MISSION -->
+    <div id="modal-menu" class="modal-overlay active">
+      <div class="modal-card glass-panel">
+        <div class="modal-header">
+          <div class="modal-badge">OPÉRATION INFILTRATION</div>
+          <h2 class="modal-title">SÉLECTIONNEZ LE THÉÂTRE D'OPÉRATION</h2>
+          <p class="modal-sub">Débusquez et neutralisez les véhicules clandestins cachés dans le parking souterrain.</p>
+        </div>
+
+        <div class="mode-cards-grid">
+          <!-- MODE RALLYE -->
+          <div class="mode-card" data-mode="rallye">
+            <div class="mode-card-header">
+              <span class="mode-diff green">ESCARMOUCHE RAPIDE</span>
+              <h3>RALLYE URBAIN</h3>
+            </div>
+            <div class="mode-specs">
+              <div class="spec-item"><strong>Grille :</strong> 5×5 (25 places)</div>
+              <div class="spec-item"><strong>Flotte :</strong> 2 Véhicules</div>
+              <div class="spec-item"><strong>Cibles :</strong> 1 Kei Car · 1 Nissan GT-R</div>
+              <div class="spec-item"><strong>Radar :</strong> Non disponible</div>
+            </div>
+            <div class="mode-record">
+              <span>Record actuel :</span>
+              <b id="card-rec-rallye" class="text-cyan">-- scans</b>
+            </div>
+            <button class="btn-launch btn-green">DÉMARRER RALLYE</button>
+          </div>
+
+          <!-- MODE GRAND PRIX -->
+          <div class="mode-card featured" data-mode="grand_prix">
+            <div class="badge-featured">RECOMMANDE</div>
+            <div class="mode-card-header">
+              <span class="mode-diff yellow">TRAQUE TACTIQUE</span>
+              <h3>GRAND PRIX</h3>
+            </div>
+            <div class="mode-specs">
+              <div class="spec-item"><strong>Grille :</strong> 8×8 (64 places)</div>
+              <div class="spec-item"><strong>Flotte :</strong> 5 Véhicules uniques</div>
+              <div class="spec-item"><strong>Cibles :</strong> Limousine VIP (5) · Blindé (2×2) · F1 (3) · GT-R (2) · Kei Car (1)</div>
+              <div class="spec-item"><strong>Radar :</strong> 1 Scan EMP 3×3 inclus</div>
+            </div>
+            <div class="mode-record">
+              <span>Record actuel :</span>
+              <b id="card-rec-gp" class="text-yellow">-- scans</b>
+            </div>
+            <button class="btn-launch btn-yellow">DÉMARRER GRAND PRIX</button>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <div class="footer-tips">
+            <span>💡 <i>Raccourcis :</i> <kbd>R</kbd> Radar EMP · <kbd>M</kbd> Mute Audio · <kbd>Échap</kbd> Menu</span>
+          </div>
+          <button id="btn-close-modal" class="btn-secondary" style="display:none;">RETOURNER AU JEU</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL : VICTOIRE / MISSION COMPLETE -->
+    <div id="modal-victoire" class="modal-overlay">
+      <div class="modal-card victory-card glass-panel">
+        <div class="victory-decor"></div>
+        <div class="victory-header">
+          <div class="victory-badge">MISSION ACCOMPLIE</div>
+          <h2 class="victory-title">SECTEUR ENTIÈREMENT SÉCURISÉ</h2>
+          <p class="victory-sub">Tous les véhicules suspects ont été immobilisés et marqués comme épaves.</p>
+        </div>
+
+        <div class="victory-score-box">
+          <div class="score-circle">
+            <span class="score-number" id="vic-scans">0</span>
+            <span class="score-label">SCANS ÉMIS</span>
+          </div>
+          <div class="score-details">
+            <div class="score-row">
+              <span>Théâtre :</span>
+              <strong id="vic-mode-name" class="text-cyan">Rallye Urbain</strong>
+            </div>
+            <div class="score-row">
+              <span>Évaluation Tactique :</span>
+              <strong id="vic-rank" class="text-yellow">RANG S</strong>
+            </div>
+            <div id="vic-record-alert" class="record-alert hidden">
+              🏆 NOUVEAU RECORD ÉTABLI !
+            </div>
+          </div>
+        </div>
+
+        <div class="victory-actions">
+          <button id="btn-vic-replay" class="btn-launch btn-green">REJOUER CE SECTEUR</button>
+          <button id="btn-vic-menu" class="btn-secondary">RETOUR AU MENU</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
