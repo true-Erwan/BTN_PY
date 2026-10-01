@@ -6,7 +6,8 @@ import os
 
 from moteur_jeu import (
     nouvelle_partie, flasher_case, scan_radar, est_epave,
-    charger_records, sauvegarder_record
+    acheter_scan_radar, tirer_bombe_croix, tirer_bombe_ligne_colonne,
+    PRIX_BOUTIQUE, charger_records, sauvegarder_record
 )
 
 LARGEUR, HAUTEUR = 1200, 800
@@ -132,6 +133,7 @@ class TraqueUrbaine:
         self.records = charger_records()
 
         self.mode_radar = False
+        self.arme_active = None
         self.radar_info = None
         self.cellule_survol = None
         self.message_flash = None
@@ -168,6 +170,7 @@ class TraqueUrbaine:
         self.partie = nouvelle_partie(mode)
         self.etat = JEU
         self.mode_radar = False
+        self.arme_active = None
         self.radar_info = None
         self.message_flash = None
         self.message_timer = self.flash_ecran = self.victoire_timer = 0
@@ -191,6 +194,61 @@ class TraqueUrbaine:
 
         px = self.grille_x + gx * self.tc + self.tc // 2
         py = self.grille_y + gy * self.tc + self.tc // 2
+
+        # Arme du shop
+        if self.arme_active:
+            arme = self.arme_active
+            self.arme_active = None
+            if arme == "scan":
+                resultat = acheter_scan_radar(self.partie, gx, gy)
+                if resultat and "erreur" not in resultat:
+                    self.radar_info = resultat
+                    self.jouer_son("radar")
+                    self.anim_pings.append({"x": px, "y": py, "t": 0, "c": VERT_RADAR, "dur": 0.8})
+                    self.message_flash, self.message_timer = "Scan radar (20G) effectué !", 2.0
+                else:
+                    self.message_flash, self.message_timer = "Or insuffisant (20 requis) !", 1.5
+                return
+            elif arme == "bombe_croix":
+                resultat = tirer_bombe_croix(self.partie, gx, gy)
+                if resultat and "erreur" not in resultat:
+                    self.jouer_son("epave")
+                    self.flash_ecran = 0.2
+                    for imp in resultat.get("impacts", []):
+                        if imp.get("resultat") in ("touche", "epave"):
+                            cpx = self.grille_x + imp["x"] * self.tc + self.tc // 2
+                            cpy = self.grille_y + imp["y"] * self.tc + self.tc // 2
+                            emettre_particules(self.particules, cpx, cpy, "etincelles", 14)
+                    self.message_flash, self.message_timer = "Bombe en croix déployée !", 2.0
+                    if self.partie["fini"]:
+                        self.etat = VICTOIRE
+                        self.nouveau_record = sauvegarder_record(self.partie["mode"], self.partie["nb_scans"])
+                        self.records = charger_records()
+                        emettre_particules(self.particules, LARGEUR // 2, HAUTEUR // 2, "confetti", 60)
+                        self.jouer_son("victoire")
+                else:
+                    self.message_flash, self.message_timer = "Or insuffisant (40 requis) !", 1.5
+                return
+            elif arme == "bombe_ligne_colonne":
+                resultat = tirer_bombe_ligne_colonne(self.partie, gx, gy)
+                if resultat and "erreur" not in resultat:
+                    self.jouer_son("epave")
+                    self.flash_ecran = 0.3
+                    for imp in resultat.get("impacts", []):
+                        if imp.get("resultat") in ("touche", "epave"):
+                            cpx = self.grille_x + imp["x"] * self.tc + self.tc // 2
+                            cpy = self.grille_y + imp["y"] * self.tc + self.tc // 2
+                            emettre_particules(self.particules, cpx, cpy, "etincelles", 14)
+                    self.message_flash, self.message_timer = "Frappe Ligne/Col déployée !", 2.5
+                    if self.partie["fini"]:
+                        self.etat = VICTOIRE
+                        self.nouveau_record = sauvegarder_record(self.partie["mode"], self.partie["nb_scans"])
+                        self.records = charger_records()
+                        emettre_particules(self.particules, LARGEUR // 2, HAUTEUR // 2, "confetti", 60)
+                        self.jouer_son("victoire")
+                else:
+                    self.message_flash, self.message_timer = "Or insuffisant (80 requis) !", 1.5
+                return
 
         if self.mode_radar:
             self.mode_radar = False
@@ -245,12 +303,24 @@ class TraqueUrbaine:
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    self.etat = MENU
+                    if self.arme_active:
+                        self.arme_active = None
+                    else:
+                        self.etat = MENU
                 elif event.key == pygame.K_m:
                     self.son_actif = not self.son_actif
                 elif event.key == pygame.K_r and self.etat == JEU and self.partie and self.partie["mode"] == "grand_prix":
                     if not self.partie["radar_utilise"]:
                         self.mode_radar = not self.mode_radar
+                elif event.key == pygame.K_1 and self.etat == JEU and self.partie and self.partie["mode"] == "grand_prix":
+                    self.arme_active = "scan" if self.arme_active != "scan" else None
+                    self.jouer_son("clic")
+                elif event.key == pygame.K_2 and self.etat == JEU and self.partie and self.partie["mode"] == "grand_prix":
+                    self.arme_active = "bombe_croix" if self.arme_active != "bombe_croix" else None
+                    self.jouer_son("clic")
+                elif event.key == pygame.K_3 and self.etat == JEU and self.partie and self.partie["mode"] == "grand_prix":
+                    self.arme_active = "bombe_ligne_colonne" if self.arme_active != "bombe_ligne_colonne" else None
+                    self.jouer_son("clic")
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if self.etat == MENU:
@@ -273,10 +343,15 @@ class TraqueUrbaine:
                     if self.boutons.get("retour", pygame.Rect(0,0,0,0)).collidepoint(pos):
                         self.etat = MENU
                         self.jouer_son("clic")
-                    elif self.boutons.get("radar_btn", pygame.Rect(0,0,0,0)).collidepoint(pos):
-                        if not self.partie["radar_utilise"]:
-                            self.mode_radar = not self.mode_radar
-                            self.jouer_son("clic")
+                    elif self.boutons.get("shop_scan", pygame.Rect(0,0,0,0)).collidepoint(pos):
+                        self.arme_active = "scan" if self.arme_active != "scan" else None
+                        self.jouer_son("clic")
+                    elif self.boutons.get("shop_croix", pygame.Rect(0,0,0,0)).collidepoint(pos):
+                        self.arme_active = "bombe_croix" if self.arme_active != "bombe_croix" else None
+                        self.jouer_son("clic")
+                    elif self.boutons.get("shop_ligne", pygame.Rect(0,0,0,0)).collidepoint(pos):
+                        self.arme_active = "bombe_ligne_colonne" if self.arme_active != "bombe_ligne_colonne" else None
+                        self.jouer_son("clic")
                     else:
                         self._clic_grille(pos)
 
@@ -415,14 +490,25 @@ class TraqueUrbaine:
             txt2 = self.p_petite.render(str(i + 1), True, MARQUAGE)
             ecran.blit(txt2, (self.grille_x - 20, self.grille_y + i * tc + tc // 2 - txt2.get_height() // 2))
 
-        if self.mode_radar and self.cellule_survol:
+        if (self.mode_radar or self.arme_active) and self.cellule_survol:
             sx, sy = self.cellule_survol
             surf = pygame.Surface((tc, tc), pygame.SRCALPHA)
-            surf.fill((0, 255, 100, 30))
-            for dy in (-1, 0, 1):
-                for dx in (-1, 0, 1):
+            if self.mode_radar or self.arme_active == "scan":
+                surf.fill((0, 255, 100, 35))
+                for dy in (-1, 0, 1):
+                    for dx in (-1, 0, 1):
+                        if 0 <= sx + dx < t and 0 <= sy + dy < t:
+                            ecran.blit(surf, (self.grille_x + (sx + dx) * tc, self.grille_y + (sy + dy) * tc))
+            elif self.arme_active == "bombe_croix":
+                surf.fill((255, 140, 0, 50))
+                for dx, dy in ((0, 0), (0, -1), (0, 1), (-1, 0), (1, 0)):
                     if 0 <= sx + dx < t and 0 <= sy + dy < t:
                         ecran.blit(surf, (self.grille_x + (sx + dx) * tc, self.grille_y + (sy + dy) * tc))
+            elif self.arme_active == "bombe_ligne_colonne":
+                surf.fill((255, 50, 60, 45))
+                for i in range(t):
+                    ecran.blit(surf, (self.grille_x + i * tc, self.grille_y + sy * tc))
+                    ecran.blit(surf, (self.grille_x + sx * tc, self.grille_y + i * tc))
 
         if self.radar_info:
             ri = self.radar_info
@@ -458,9 +544,16 @@ class TraqueUrbaine:
         ecran.blit(txt_scans, (px + 15, self.grille_y + 12))
         mode_nom = "RALLYE URBAIN" if self.partie["mode"] == "rallye" else "GRAND PRIX"
         ecran.blit(self.p_petite.render(mode_nom, True, JAUNE), (px + 15, self.grille_y + 46))
-        pygame.draw.line(ecran, PANNEAU_BORD, (px + 15, self.grille_y + 68), (px + pw - 15, self.grille_y + 68))
 
-        y_v = self.grille_y + 80
+        if self.partie["mode"] == "grand_prix":
+            txt_gold = self.p_petite.render(f"TOUR {self.partie.get('tour', 1)} | OR: {self.partie.get('or', 0)}G (+10/tour)", True, JAUNE)
+            ecran.blit(txt_gold, (px + 15, self.grille_y + 68))
+            pygame.draw.line(ecran, PANNEAU_BORD, (px + 15, self.grille_y + 90), (px + pw - 15, self.grille_y + 90))
+            y_v = self.grille_y + 100
+        else:
+            pygame.draw.line(ecran, PANNEAU_BORD, (px + 15, self.grille_y + 68), (px + pw - 15, self.grille_y + 68))
+            y_v = self.grille_y + 80
+
         for _, info in sorted(self.partie["vehicules"].items()):
             nom = info["nom"]
             ep = est_epave(info)
@@ -474,12 +567,37 @@ class TraqueUrbaine:
             y_v += 24
 
         if self.partie["mode"] == "grand_prix":
-            r_rad = pygame.Rect(px + 15, y_v + 15, pw - 30, 40)
-            if self.partie["radar_utilise"]:
-                dessiner_bouton(ecran, self.p_petite, "RADAR UTILISÉ", r_rad, (25, 25, 25), GRIS_SOMBRE, False, GRIS_SOMBRE)
-            else:
-                lbl = "RADAR ACTIF !" if self.mode_radar else "RADAR GPS (1x)"
-                self.boutons["radar_btn"] = dessiner_bouton(ecran, self.p_petite, lbl, r_rad, (15, 40, 20), VERT_RADAR if self.mode_radar else VERT, r_rad.collidepoint(pos), VERT_RADAR if self.mode_radar else BLANC)
+            cur_or = self.partie.get("or", 0)
+
+            # Bouton 1 : Scan 20G
+            r_b1 = pygame.Rect(px + 15, y_v + 10, pw - 30, 32)
+            c1 = (20, 50, 35) if cur_or >= 20 else (25, 25, 25)
+            if self.arme_active == "scan": c1 = (30, 80, 50)
+            self.boutons["shop_scan"] = dessiner_bouton(
+                ecran, self.p_petite, "[1] SCAN RADAR (20G)", r_b1,
+                c1, VERT_RADAR if self.arme_active == "scan" else (GRIS_SOMBRE if cur_or < 20 else VERT),
+                r_b1.collidepoint(pos), BLANC if cur_or >= 20 else GRIS_SOMBRE
+            )
+
+            # Bouton 2 : Bombe Croix 40G
+            r_b2 = pygame.Rect(px + 15, y_v + 48, pw - 30, 32)
+            c2 = (60, 40, 15) if cur_or >= 40 else (25, 25, 25)
+            if self.arme_active == "bombe_croix": c2 = (90, 55, 20)
+            self.boutons["shop_croix"] = dessiner_bouton(
+                ecran, self.p_petite, "[2] BOMBE CROIX (40G)", r_b2,
+                c2, ORANGE if self.arme_active == "bombe_croix" else (GRIS_SOMBRE if cur_or < 40 else ORANGE),
+                r_b2.collidepoint(pos), BLANC if cur_or >= 40 else GRIS_SOMBRE
+            )
+
+            # Bouton 3 : Bombe Ligne/Col 80G
+            r_b3 = pygame.Rect(px + 15, y_v + 86, pw - 30, 32)
+            c3 = (60, 20, 25) if cur_or >= 80 else (25, 25, 25)
+            if self.arme_active == "bombe_ligne_colonne": c3 = (100, 30, 35)
+            self.boutons["shop_ligne"] = dessiner_bouton(
+                ecran, self.p_petite, "[3] MÉGA BOMBE (80G)", r_b3,
+                c3, ROUGE if self.arme_active == "bombe_ligne_colonne" else (GRIS_SOMBRE if cur_or < 80 else ROUGE),
+                r_b3.collidepoint(pos), BLANC if cur_or >= 80 else GRIS_SOMBRE
+            )
 
         r_ret = pygame.Rect(px + 15, self.grille_y + ph - 45, pw - 30, 34)
         self.boutons["retour"] = dessiner_bouton(ecran, self.p_petite, "RETOUR AU MENU", r_ret, PANNEAU_BG, GRIS_SOMBRE, r_ret.collidepoint(pos), GRIS)

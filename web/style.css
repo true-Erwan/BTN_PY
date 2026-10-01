@@ -347,68 +347,363 @@ button {
   box-shadow: 0 0 6px var(--red-glow);
 }
 
-/* RADAR EMP BUTTON */
-.radar-action-zone {
-  margin-top: 14px;
-  border-top: 1px solid var(--border-dim);
-  padding-top: 14px;
-}
-
-.btn-radar-emp {
-  width: 100%;
+/* TOP HUD GOLD & STATS */
+.gold-box {
   position: relative;
-  background: linear-gradient(135deg, rgba(0, 255, 127, 0.15), rgba(0, 100, 50, 0.3));
-  border: 1px solid var(--green);
-  border-radius: 8px;
-  padding: 12px;
-  color: #fff;
-  overflow: hidden;
-  box-shadow: 0 0 16px rgba(0, 255, 127, 0.2);
 }
 
-.btn-radar-emp:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(0, 255, 127, 0.25), rgba(0, 140, 70, 0.45));
-  box-shadow: 0 0 24px var(--green-glow);
-  transform: translateY(-1px);
+.gold-val-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
 }
 
-.btn-radar-emp.active {
-  background: linear-gradient(135deg, rgba(0, 255, 127, 0.4), rgba(0, 255, 127, 0.15));
-  border-color: #fff;
-  box-shadow: 0 0 28px var(--green);
-  animation: pulseActive 1s infinite alternate;
+.coin-icon-hud {
+  font-size: 1.1rem;
 }
 
-@keyframes pulseActive {
-  from { box-shadow: 0 0 14px var(--green-glow); }
-  to { box-shadow: 0 0 28px var(--green); }
+.stat-unit {
+  font-family: var(--font-hud);
+  font-size: 0.85rem;
+  color: var(--yellow);
+  opacity: 0.8;
 }
 
-.btn-radar-emp:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-  border-color: var(--text-muted);
-  box-shadow: none;
+.gold-float-container {
+  position: absolute;
+  top: -10px;
+  right: -15px;
+  pointer-events: none;
 }
 
-.btn-radar-content {
+.gold-float-anim {
+  font-family: var(--font-hud);
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #ffe600;
+  text-shadow: 0 0 10px rgba(255, 230, 0, 0.8);
+  animation: floatUpFade 1.2s ease-out forwards;
+}
+
+@keyframes floatUpFade {
+  0% { transform: translateY(0) scale(0.8); opacity: 1; }
+  50% { transform: translateY(-16px) scale(1.1); opacity: 1; }
+  100% { transform: translateY(-30px) scale(1); opacity: 0; }
+}
+
+/* ARSENAL & BOUTIQUE DU MARCHÉ NOIR (GRAND PRIX) */
+.shop-action-zone {
+  margin-top: 12px;
+  border-top: 1px solid var(--border-dim);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shop-panel-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  text-align: left;
+  gap: 8px;
+  margin-bottom: 2px;
 }
 
-.radar-icon { font-size: 1.6rem; }
-.radar-btn-title { font-family: var(--font-hud); font-size: 0.85rem; font-weight: 700; color: var(--green); }
-.radar-btn-sub { font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-muted); }
-
-.radar-status-badge {
-  text-align: center;
-  margin-top: 6px;
+.tag-shop {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  color: var(--green);
+  font-size: 0.62rem;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-weight: bold;
+  background: rgba(255, 208, 0, 0.15);
+  color: var(--yellow);
+  border: 1px solid var(--yellow);
+}
+
+.shop-title-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+}
+
+.shop-title-wrap h3 {
+  font-family: var(--font-hud);
+  font-size: 0.78rem;
   letter-spacing: 1px;
+  color: #fff;
+}
+
+.shop-gold-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 208, 0, 0.12);
+  border: 1px solid rgba(255, 208, 0, 0.4);
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-family: var(--font-hud);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--yellow);
+  box-shadow: 0 0 10px rgba(255, 208, 0, 0.2);
+}
+
+.shop-income-tag {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: #70d890;
+  margin-left: 4px;
+  background: rgba(0, 255, 127, 0.12);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.shop-items-container {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.shop-card-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(20, 26, 40, 0.7);
+  border: 1px solid var(--border-dim);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: #fff;
+  text-align: left;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.shop-card-btn:hover:not(:disabled) {
+  background: rgba(30, 40, 65, 0.85);
+  border-color: rgba(255, 208, 0, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+/* Active Armed Weapon */
+.shop-card-btn.active {
+  background: rgba(40, 45, 70, 0.95);
+  border-color: #fff !important;
+  box-shadow: 0 0 18px var(--yellow-glow);
+  animation: armedPulse 1.2s infinite alternate;
+}
+
+@keyframes armedPulse {
+  from { box-shadow: 0 0 10px rgba(255, 208, 0, 0.4); border-color: rgba(255, 255, 255, 0.7); }
+  to { box-shadow: 0 0 22px rgba(255, 208, 0, 0.8); border-color: #fff; }
+}
+
+.shop-card-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+
+.shop-card-btn.insufficient {
+  opacity: 0.55;
+  border-color: rgba(255, 51, 68, 0.25);
+}
+
+.shop-card-icon {
+  font-size: 1.4rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.scan-icon { background: rgba(0, 240, 255, 0.12); color: var(--cyan); border: 1px solid rgba(0, 240, 255, 0.3); }
+.bomb-icon { background: rgba(255, 119, 0, 0.15); color: var(--orange); border: 1px solid rgba(255, 119, 0, 0.4); }
+.laser-icon { background: rgba(255, 51, 68, 0.15); color: var(--red); border: 1px solid rgba(255, 51, 68, 0.4); }
+
+.shop-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.shop-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.shop-card-title {
+  font-family: var(--font-hud);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: 0.5px;
+}
+
+.shop-card-key {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.shop-card-desc {
+  font-family: var(--font-mono);
+  font-size: 0.63rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+.shop-card-price {
+  font-family: var(--font-hud);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--yellow);
+  background: rgba(255, 208, 0, 0.1);
+  padding: 4px 7px;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 208, 0, 0.25);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Shop Status Banner */
+.shop-active-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(90deg, rgba(255, 208, 0, 0.2), rgba(255, 119, 0, 0.2));
+  border: 1px solid var(--yellow);
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-top: 2px;
+  animation: bannerFadeIn 0.3s ease;
+}
+
+@keyframes bannerFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.pulse-indicator {
+  width: 8px;
+  height: 8px;
+  background: var(--yellow);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--yellow);
+  animation: pulseDot 1s infinite alternate;
+  margin-right: 6px;
+}
+
+@keyframes pulseDot {
+  from { transform: scale(0.8); opacity: 0.6; }
+  to { transform: scale(1.3); opacity: 1; }
+}
+
+.active-text {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: #fff;
+  flex: 1;
+}
+
+.btn-cancel-weapon {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  padding: 0;
+}
+
+.btn-cancel-weapon:hover {
+  background: rgba(255, 51, 68, 0.4);
+  border-color: var(--red);
+}
+
+.shop-rallye-notice {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed var(--border-dim);
+  padding: 10px;
+  border-radius: 6px;
+}
+
+/* HOVER PREVIEWS FOR WEAPONS */
+.grid-cell.preview-scan {
+  background: rgba(0, 240, 255, 0.22) !important;
+  border-color: var(--cyan) !important;
+  box-shadow: inset 0 0 10px var(--cyan-glow) !important;
+}
+
+.grid-cell.preview-bomb-center {
+  background: rgba(255, 119, 0, 0.4) !important;
+  border-color: var(--orange) !important;
+  box-shadow: inset 0 0 14px rgba(255, 119, 0, 0.9), 0 0 14px var(--orange) !important;
+  transform: scale(1.05);
+  z-index: 10;
+}
+
+.grid-cell.preview-bomb-adj {
+  background: rgba(255, 119, 0, 0.25) !important;
+  border-color: rgba(255, 119, 0, 0.8) !important;
+  box-shadow: inset 0 0 10px rgba(255, 119, 0, 0.6) !important;
+}
+
+.grid-cell.preview-laser-line {
+  background: rgba(255, 51, 68, 0.22) !important;
+  border-color: rgba(255, 51, 68, 0.7) !important;
+  box-shadow: inset 0 0 8px rgba(255, 51, 68, 0.5) !important;
+}
+
+.grid-cell.preview-laser-center {
+  background: rgba(255, 51, 68, 0.5) !important;
+  border-color: #fff !important;
+  box-shadow: 0 0 22px var(--red-glow), inset 0 0 15px #ff3344 !important;
+  transform: scale(1.07);
+  z-index: 10;
+}
+
+/* BLAST ANIMATION ON CELL */
+@keyframes bombBlast {
+  0% { transform: scale(1.5); filter: brightness(3); box-shadow: 0 0 30px #ff6600; }
+  50% { transform: scale(1.1); filter: brightness(1.6); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+.grid-cell.cell-blast {
+  animation: bombBlast 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
+  z-index: 15;
+}
+
+/* SCREEN SHAKE */
+.screen-shake {
+  animation: screenShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes screenShake {
+  10%, 90% { transform: translate3d(-3px, 1px, 0); }
+  20%, 80% { transform: translate3d(4px, -2px, 0); }
+  30%, 50%, 70% { transform: translate3d(-5px, 3px, 0); }
+  40%, 60% { transform: translate3d(5px, -1px, 0); }
 }
 
 /* CENTER RADAR GRID */

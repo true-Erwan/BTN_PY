@@ -10,7 +10,8 @@ import time
 
 from moteur_jeu import (
     nouvelle_partie, flasher_case, scan_radar,
-    charger_records, sauvegarder_record
+    acheter_scan_radar, tirer_bombe_croix, tirer_bombe_ligne_colonne,
+    PRIX_BOUTIQUE, charger_records, sauvegarder_record
 )
 
 app = FastAPI(title="Traque Urbaine API")
@@ -27,6 +28,12 @@ class RequeteMode(BaseModel):
 
 
 class RequeteCoordonnees(BaseModel):
+    x: int
+    y: int
+
+
+class RequeteBoutique(BaseModel):
+    action: str  # "scan", "bombe_croix", "bombe_ligne_colonne"
     x: int
     y: int
 
@@ -86,6 +93,41 @@ def api_radar(req: RequeteCoordonnees):
     }
 
 
+@app.post("/api/shop/action")
+def api_shop_action(req: RequeteBoutique):
+    global partie_courante
+    if not partie_courante or partie_courante["fini"]:
+        raise HTTPException(status_code=400, detail="Aucune partie active")
+
+    if req.action == "scan":
+        resultat = acheter_scan_radar(partie_courante, req.x, req.y)
+    elif req.action == "bombe_croix":
+        resultat = tirer_bombe_croix(partie_courante, req.x, req.y)
+    elif req.action == "bombe_ligne_colonne":
+        resultat = tirer_bombe_ligne_colonne(partie_courante, req.x, req.y)
+    else:
+        raise HTTPException(status_code=400, detail="Action boutique inconnue")
+
+    if isinstance(resultat, dict) and "erreur" in resultat:
+        raise HTTPException(status_code=400, detail=resultat["erreur"])
+
+    if req.action == "scan" and resultat.get("type") == "contact":
+        resultat["adjacents"] = {
+            f"{c[0]},{c[1]}": occ for c, occ in resultat["adjacents"].items()
+        }
+
+    nouveau_record = False
+    if partie_courante["fini"]:
+        nouveau_record = sauvegarder_record(partie_courante["mode"], partie_courante["nb_scans"])
+
+    return {
+        "action": req.action,
+        "resultat": resultat,
+        "partie": formater_etat_partie(),
+        "nouveau_record": nouveau_record
+    }
+
+
 def formater_etat_partie():
     if not partie_courante:
         return None
@@ -111,6 +153,9 @@ def formater_etat_partie():
         "mode": partie_courante["mode"],
         "nb_scans": partie_courante["nb_scans"],
         "radar_utilise": partie_courante["radar_utilise"],
+        "tour": partie_courante.get("tour", 1),
+        "or": partie_courante.get("or", 0),
+        "prix_boutique": PRIX_BOUTIQUE,
         "fini": partie_courante["fini"],
         "cases_flashees": cases_flashees_str,
         "vehicules": vehicules_info,

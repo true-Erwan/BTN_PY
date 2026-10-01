@@ -33,6 +33,19 @@
           <span id="stat-mode" class="stat-value text-cyan">MENU</span>
         </div>
         <div class="hud-stat-box">
+          <span class="stat-label">TOUR</span>
+          <span id="stat-tour" class="stat-value text-cyan">1</span>
+        </div>
+        <div class="hud-stat-box gold-box" id="hud-stat-gold">
+          <span class="stat-label">CRÉDITS / OR (+10/tour)</span>
+          <div class="gold-val-wrap">
+            <span class="coin-icon-hud">🪙</span>
+            <span id="stat-gold" class="stat-value text-yellow">0</span>
+            <span class="stat-unit">OR</span>
+          </div>
+          <div id="gold-float-container" class="gold-float-container"></div>
+        </div>
+        <div class="hud-stat-box">
           <span class="stat-label">SCANS ÉMIS</span>
           <span id="stat-scans" class="stat-value text-yellow">0</span>
         </div>
@@ -64,18 +77,76 @@
         <div id="target-list" class="target-cards-container">
           <!-- Injecté dynamiquement -->
         </div>
-        <div class="radar-action-zone" id="radar-zone">
-          <button id="btn-radar" class="btn-radar-emp">
-            <div class="radar-pulse-ring"></div>
-            <div class="btn-radar-content">
-              <span class="radar-icon">📡</span>
-              <div>
-                <div class="radar-btn-title">RADAR EMP GPS</div>
-                <div class="radar-btn-sub">BALAYAGE ZONE 3×3 (1 USAGE)</div>
+
+        <!-- ARSENAL & BOUTIQUE DU MARCHÉ NOIR (GRAND PRIX) -->
+        <div class="shop-action-zone" id="shop-zone">
+          <div class="shop-panel-header">
+            <span class="tag-shop">ARSENAL</span>
+            <div class="shop-title-wrap">
+              <h3>MARCHÉ NOIR</h3>
+              <div class="shop-gold-badge" id="shop-gold-badge">
+                <span class="coin-icon">🪙</span>
+                <span id="shop-gold-count">0</span> OR
+                <span class="shop-income-tag">+10/tour</span>
               </div>
             </div>
-          </button>
-          <div id="radar-status-text" class="radar-status-badge">PRÊT</div>
+          </div>
+
+          <!-- LISTE DES OBJETS DU SHOP -->
+          <div class="shop-items-container" id="shop-items-list">
+            <!-- ITEM 1 : SCAN RADAR (20 OR) -->
+            <button class="shop-card-btn" id="btn-shop-scan" data-item="scan" data-prix="20" title="Raccourci [1]">
+              <div class="shop-card-glow"></div>
+              <div class="shop-card-icon scan-icon">📡</div>
+              <div class="shop-card-body">
+                <div class="shop-card-title-row">
+                  <span class="shop-card-title">SCAN RADAR</span>
+                  <span class="shop-card-key">[1]</span>
+                </div>
+                <div class="shop-card-desc">Balayage 3×3 (détecte sans dégât)</div>
+              </div>
+              <div class="shop-card-price"><span class="price-val">20</span> 🪙</div>
+            </button>
+
+            <!-- ITEM 2 : BOMBE EN CROIX (40 OR) -->
+            <button class="shop-card-btn" id="btn-shop-bombe-croix" data-item="bombe_croix" data-prix="40" title="Raccourci [2]">
+              <div class="shop-card-glow"></div>
+              <div class="shop-card-icon bomb-icon">💣</div>
+              <div class="shop-card-body">
+                <div class="shop-card-title-row">
+                  <span class="shop-card-title">BOMBE EN CROIX</span>
+                  <span class="shop-card-key">[2]</span>
+                </div>
+                <div class="shop-card-desc">Frappe 5 cases (centre + 4 adjacentes)</div>
+              </div>
+              <div class="shop-card-price"><span class="price-val">40</span> 🪙</div>
+            </button>
+
+            <!-- ITEM 3 : BOMBE LIGNE & COLONNE (80 OR) -->
+            <button class="shop-card-btn" id="btn-shop-bombe-ligne" data-item="bombe_ligne_colonne" data-prix="80" title="Raccourci [3]">
+              <div class="shop-card-glow"></div>
+              <div class="shop-card-icon laser-icon">⚡</div>
+              <div class="shop-card-body">
+                <div class="shop-card-title-row">
+                  <span class="shop-card-title">FRAPPE ORBITALE</span>
+                  <span class="shop-card-key">[3]</span>
+                </div>
+                <div class="shop-card-desc">Explose toute la ligne et la colonne</div>
+              </div>
+              <div class="shop-card-price"><span class="price-val">80</span> 🪙</div>
+            </button>
+          </div>
+
+          <!-- BANNIÈRE DE STATUT / ARME EN COURS -->
+          <div id="shop-active-banner" class="shop-active-banner hidden">
+            <span class="pulse-indicator"></span>
+            <span id="shop-active-text" class="active-text">Arme prête : Cliquez sur une case</span>
+            <button id="btn-shop-cancel" class="btn-cancel-weapon" title="Annuler">✕</button>
+          </div>
+
+          <div id="shop-rallye-notice" class="shop-rallye-notice hidden">
+            <span>🔒 Arsenal réservé au mode Grand Prix</span>
+          </div>
         </div>
       </aside>
 
@@ -191,7 +262,8 @@
               <div class="spec-item"><strong>Grille :</strong> 8×8 (64 places)</div>
               <div class="spec-item"><strong>Flotte :</strong> 5 Véhicules uniques</div>
               <div class="spec-item"><strong>Cibles :</strong> Limousine VIP (5) · Blindé (2×2) · F1 (3) · GT-R (2) · Kei Car (1)</div>
-              <div class="spec-item"><strong>Radar :</strong> 1 Scan EMP 3×3 inclus</div>
+              <div class="spec-item"><strong>Économie :</strong> +10 Or / tour · Marché noir débloqué</div>
+              <div class="spec-item"><strong>Arsenal :</strong> Scan (20🪙) · Bombe Croix (40🪙) · Frappe Orbitale (80🪙)</div>
             </div>
             <div class="mode-record">
               <span>Record actuel :</span>
@@ -203,7 +275,7 @@
 
         <div class="modal-footer">
           <div class="footer-tips">
-            <span>💡 <i>Raccourcis :</i> <kbd>R</kbd> Radar EMP · <kbd>M</kbd> Mute Audio · <kbd>Échap</kbd> Menu</span>
+            <span>💡 <i>Raccourcis :</i> <kbd>1</kbd> Scan · <kbd>2</kbd> Bombe Croix · <kbd>3</kbd> Frappe Orbitale · <kbd>M</kbd> Audio · <kbd>Échap</kbd> Menu</span>
           </div>
           <button id="btn-close-modal" class="btn-secondary" style="display:none;">RETOURNER AU JEU</button>
         </div>
