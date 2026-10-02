@@ -569,7 +569,6 @@ class TraqueUrbaine:
         if self.partie["mode"] == "grand_prix":
             cur_or = self.partie.get("or", 0)
 
-            # Bouton 1 : Scan 20G
             r_b1 = pygame.Rect(px + 15, y_v + 10, pw - 30, 32)
             c1 = (20, 50, 35) if cur_or >= 20 else (25, 25, 25)
             if self.arme_active == "scan": c1 = (30, 80, 50)
@@ -579,7 +578,6 @@ class TraqueUrbaine:
                 r_b1.collidepoint(pos), BLANC if cur_or >= 20 else GRIS_SOMBRE
             )
 
-            # Bouton 2 : Bombe Croix 40G
             r_b2 = pygame.Rect(px + 15, y_v + 48, pw - 30, 32)
             c2 = (60, 40, 15) if cur_or >= 40 else (25, 25, 25)
             if self.arme_active == "bombe_croix": c2 = (90, 55, 20)
@@ -589,7 +587,6 @@ class TraqueUrbaine:
                 r_b2.collidepoint(pos), BLANC if cur_or >= 40 else GRIS_SOMBRE
             )
 
-            # Bouton 3 : Bombe Ligne/Col 80G
             r_b3 = pygame.Rect(px + 15, y_v + 86, pw - 30, 32)
             c3 = (60, 20, 25) if cur_or >= 80 else (25, 25, 25)
             if self.arme_active == "bombe_ligne_colonne": c3 = (100, 30, 35)

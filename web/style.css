@@ -78,9 +78,12 @@ body.cyber-theme {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  padding: 14px 24px 20px;
+  max-height: 100vh;
+  padding: 12px 20px 14px;
   position: relative;
   z-index: 10;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 /* TOP HUD */
@@ -88,13 +91,14 @@ body.cyber-theme {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 24px;
+  padding: 10px 20px;
   background: var(--bg-panel);
   border: 1px solid var(--border-neon);
   border-radius: 8px;
   backdrop-filter: blur(12px);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .hud-brand {
@@ -221,10 +225,13 @@ button {
 /* MAIN LAYOUT */
 .tactical-layout {
   display: grid;
-  grid-template-columns: 310px 1fr 310px;
-  gap: 18px;
-  flex: 1;
+  grid-template-columns: 310px minmax(0, 1fr) 310px;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 16px;
+  flex: 1 1 0;
   min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .glass-card {
@@ -232,19 +239,24 @@ button {
   border: 1px solid var(--border-dim);
   border-radius: 10px;
   backdrop-filter: blur(16px);
-  padding: 16px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .panel-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   border-bottom: 1px solid var(--border-dim);
   padding-bottom: 8px;
+  flex-shrink: 0;
 }
 
 .panel-header h2 {
@@ -268,25 +280,28 @@ button {
 .target-cards-container {
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 7px;
   overflow-y: auto;
-  flex: 1;
+  overflow-x: hidden;
+  flex: 1 1 auto;
+  min-height: 0;
   padding-right: 4px;
 }
 
 .target-cards-container::-webkit-scrollbar { width: 4px; }
-.target-cards-container::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 2px; }
+.target-cards-container::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.3); border-radius: 2px; }
 
 .target-card {
   background: var(--bg-card);
   border: 1px solid var(--border-dim);
   border-left: 3px solid var(--cyan);
   border-radius: 6px;
-  padding: 9px 12px;
+  padding: 7px 10px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
   transition: all 0.25s;
+  flex-shrink: 0;
 }
 
 .target-card.wrecked {
@@ -393,12 +408,13 @@ button {
 
 /* ARSENAL & BOUTIQUE DU MARCHÉ NOIR (GRAND PRIX) */
 .shop-action-zone {
-  margin-top: 12px;
+  margin-top: auto;
   border-top: 1px solid var(--border-dim);
-  padding-top: 10px;
+  padding-top: 8px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
+  flex-shrink: 0;
 }
 
 .shop-panel-header {
@@ -406,6 +422,7 @@ button {
   align-items: center;
   gap: 8px;
   margin-bottom: 2px;
+  flex-shrink: 0;
 }
 
 .tag-shop {
@@ -462,6 +479,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 7px;
+  flex-shrink: 0;
 }
 
 .shop-card-btn {
@@ -472,11 +490,12 @@ button {
   background: rgba(20, 26, 40, 0.7);
   border: 1px solid var(--border-dim);
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 7px 10px;
   color: #fff;
   text-align: left;
   overflow: hidden;
   transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  flex-shrink: 0;
 }
 
 .shop-card-btn:hover:not(:disabled) {
@@ -712,18 +731,24 @@ button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .radar-grid-wrapper {
   background: var(--bg-panel);
   border: 1px solid var(--border-neon);
   border-radius: 12px;
-  padding: 16px 20px;
+  padding: 10px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
   box-shadow: 0 0 40px rgba(0, 0, 0, 0.7), inset 0 0 60px rgba(0, 240, 255, 0.03);
+  max-height: 100%;
+  flex-shrink: 0;
 }
 
 .grid-frame-header, .grid-frame-footer {
@@ -734,11 +759,12 @@ button {
   font-family: var(--font-mono);
   font-size: 0.7rem;
   color: var(--text-muted);
-  padding: 4px 6px;
+  padding: 2px 6px;
+  flex-shrink: 0;
 }
 
-.grid-frame-header { margin-bottom: 10px; }
-.grid-frame-footer { margin-top: 12px; border-top: 1px solid var(--border-dim); padding-top: 10px; }
+.grid-frame-header { margin-bottom: 6px; }
+.grid-frame-footer { margin-top: 8px; border-top: 1px solid var(--border-dim); padding-top: 8px; }
 
 .frame-coord { color: var(--cyan); }
 
@@ -921,8 +947,9 @@ button {
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid var(--border-dim);
   border-radius: 6px;
-  padding: 10px;
-  margin-bottom: 12px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
 }
 
 .recon-label {
@@ -936,18 +963,21 @@ button {
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--cyan);
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
 .terminal-container {
   background: #0a0d14;
   border: 1px solid rgba(0, 240, 255, 0.2);
   border-radius: 6px;
-  flex: 1;
+  height: 250px;
+  min-height: 250px;
+  max-height: 250px;
+  flex: none;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .terminal-bar {
@@ -957,6 +987,7 @@ button {
   align-items: center;
   gap: 6px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
 }
 
 .dot { width: 8px; height: 8px; border-radius: 50%; }
@@ -966,15 +997,31 @@ button {
 .term-title { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); margin-left: 6px; }
 
 .terminal-logs {
-  padding: 10px;
+  padding: 8px 10px;
   font-family: var(--font-mono);
   font-size: 0.72rem;
   color: #a0aec0;
   overflow-y: auto;
-  flex: 1;
+  overflow-x: hidden;
+  flex: 1 1 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
+}
+
+.terminal-logs::-webkit-scrollbar {
+  width: 5px;
+}
+.terminal-logs::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+.terminal-logs::-webkit-scrollbar-thumb {
+  background: rgba(0, 240, 255, 0.35);
+  border-radius: 3px;
+}
+.terminal-logs::-webkit-scrollbar-thumb:hover {
+  background: var(--cyan);
 }
 
 .terminal-logs p.log-hit { color: var(--orange); }
@@ -986,7 +1033,9 @@ button {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--border-dim);
   border-radius: 6px;
-  padding: 10px 12px;
+  padding: 8px 10px;
+  flex-shrink: 0;
+  margin-top: auto;
 }
 
 .rec-title {

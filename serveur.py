@@ -33,7 +33,7 @@ class RequeteCoordonnees(BaseModel):
 
 
 class RequeteBoutique(BaseModel):
-    action: str  # "scan", "bombe_croix", "bombe_ligne_colonne"
+    action: str
     x: int
     y: int
 
