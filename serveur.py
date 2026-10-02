@@ -171,7 +171,10 @@ if os.path.exists(DOSSIER_WEB):
 
 @app.get("/")
 def index():
-    return FileResponse(os.path.join(DOSSIER_WEB, "index.html"))
+    return FileResponse(
+        os.path.join(DOSSIER_WEB, "index.html"),
+        headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
+    )
 
 
 def ouvrir_navigateur():

@@ -226,11 +226,22 @@ button {
 .tactical-layout {
   display: grid;
   grid-template-columns: 310px minmax(0, 1fr) 310px;
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: 1fr;
+  align-items: start;
   gap: 16px;
   flex: 1 1 0;
   min-height: 0;
   max-height: 100%;
+  overflow: hidden;
+}
+
+.panel-left,
+.panel-right {
+  height: calc(100vh - 110px);
+  max-height: calc(100vh - 110px);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
@@ -240,13 +251,7 @@ button {
   border-radius: 10px;
   backdrop-filter: blur(16px);
   padding: 14px;
-  display: flex;
-  flex-direction: column;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  min-height: 0;
-  height: 100%;
-  max-height: 100%;
-  overflow: hidden;
 }
 
 .panel-header {
@@ -730,10 +735,11 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  padding-top: 4px;
   min-height: 0;
-  height: 100%;
-  max-height: 100%;
+  height: calc(100vh - 110px);
+  max-height: calc(100vh - 110px);
   overflow: hidden;
 }
 
@@ -1001,13 +1007,12 @@ button {
   font-family: var(--font-mono);
   font-size: 0.72rem;
   color: #a0aec0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   flex: 1 1 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
 }
 
 .terminal-logs::-webkit-scrollbar {

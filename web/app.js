@@ -504,17 +504,8 @@ class GameApp {
 
   ajusterTailleGrille() {
     if (!this.partie || !this.dom.grid) return;
-    const centerArea = document.querySelector('.grid-center-area');
-    let availH = 430;
-    let availW = 430;
-    if (centerArea && centerArea.clientHeight > 0) {
-      availH = centerArea.clientHeight - 85;
-      availW = centerArea.clientWidth - 40;
-    } else {
-      availH = window.innerHeight - 200;
-      availW = window.innerWidth * 0.42;
-    }
-    const maxDimension = Math.max(260, Math.min(Math.floor(availH), Math.floor(availW), 480));
+    const t = this.partie.taille;
+    const maxDimension = t === 5 ? 380 : 440;
     this.dom.grid.style.width = `${maxDimension}px`;
     this.dom.grid.style.height = `${maxDimension}px`;
     if (this.radarSweep) {
@@ -992,15 +983,11 @@ class GameApp {
     p.textContent = text;
     this.dom.terminalFeed.appendChild(p);
 
-    // Taille fixe du terminal : conserver uniquement les 9 logs les plus récents
-    const MAX_LIGNES = 9;
+    // Taille fixe du terminal : conserver exactement les 8 logs les plus récents
+    const MAX_LIGNES = 8;
     while (this.dom.terminalFeed.children.length > MAX_LIGNES) {
       this.dom.terminalFeed.removeChild(this.dom.terminalFeed.firstChild);
     }
-
-    requestAnimationFrame(() => {
-      this.dom.terminalFeed.scrollTop = this.dom.terminalFeed.scrollHeight;
-    });
   }
 
   declencherVictoire(nouveauRecord) {

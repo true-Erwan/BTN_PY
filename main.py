@@ -195,7 +195,6 @@ class TraqueUrbaine:
         px = self.grille_x + gx * self.tc + self.tc // 2
         py = self.grille_y + gy * self.tc + self.tc // 2
 
-        # Arme du shop
         if self.arme_active:
             arme = self.arme_active
             self.arme_active = None
