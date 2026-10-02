@@ -298,7 +298,80 @@ class TraqueUrbaine:
         pos = pygame.mouse.get_pos()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
+
+        for i in range(8):
+            yy = (i * 120 + int(self.menu_timer * 30)) % (HAUTEUR + 100) - 50
+            pygame.draw.rect(ecran, (25, 27, 32), (LARGEUR // 2 - 3, yy, 6, 40))
+
+        texte_centre(ecran, self.p_titre, "TRAQUE URBAINE", 100, CYAN)
+        texte_centre(ecran, self.p_normale, "Détection Tactique sur Grille de Parking", 160, GRIS)
+        pygame.draw.line(ecran, CYAN_SOMBRE, (LARGEUR // 2 - 200, 195), (LARGEUR // 2 + 200, 195), 1)
+
+        pos = pygame.mouse.get_pos()
+        r1 = pygame.Rect(LARGEUR // 2 - 200, 240, 400, 60)
+        self.boutons["rallye"] = dessiner_bouton(ecran, self.p_grande, "RALLYE URBAIN (5x5)", r1, (20, 50, 30), VERT, r1.collidepoint(pos))
+
+        r2 = pygame.Rect(LARGEUR // 2 - 200, 320, 400, 60)
+        self.boutons["grand_prix"] = dessiner_bouton(ecran, self.p_grande, "GRAND PRIX (8x8)", r2, (50, 40, 15), JAUNE, r2.collidepoint(pos), JAUNE)
+
+        r_rec = pygame.Rect(LARGEUR // 2 - 180, 410, 360, 110)
+        pygame.draw.rect(ecran, PANNEAU_BG, r_rec, border_radius=10)
+        pygame.draw.rect(ecran, PANNEAU_BORD, r_rec, 1, border_radius=10)
+        texte_centre(ecran, self.p_normale, "MEILLEURS SCORES", 422, CYAN)
+        rec_r = self.records.get("rallye")
+        rec_gp = self.records.get("grand_prix")
+        texte_centre(ecran, self.p_petite, f"Rallye : {rec_r if rec_r is not None else '---'} scans", 455, BLANC)
+        texte_centre(ecran, self.p_petite, f"Grand Prix : {rec_gp if rec_gp is not None else '---'} scans", 480, BLANC)
+
+        r_son = pygame.Rect(LARGEUR // 2 - 180, 550, 170, 38)
+        self.boutons["son"] = dessiner_bouton(ecran, self.p_petite, f"Son : {'ON' if self.son_actif else 'OFF'}", r_son, PANNEAU_BG, GRIS_SOMBRE, r_son.collidepoint(pos))
+
+        r_reset = pygame.Rect(LARGEUR // 2 + 10, 550, 170, 38)
+        self.boutons["reset"] = dessiner_bouton(ecran, self.p_petite, "Reset Records", r_reset, PANNEAU_BG, GRIS_SOMBRE, r_reset.collidepoint(pos))
+        texte_centre(ecran, self.p_petite, "by Erwan — 2026", 740, (45, 48, 55))
+
+    def _dessiner_cellule(self, gx, gy):
+        ecran, tc = self.ecran, self.tc
+        px = self.grille_x + gx * tc
+        py = self.grille_y + gy * tc
+        r_int = pygame.Rect(px + 2, py + 2, tc - 4, tc - 4)
+        etat_c = self.partie["cases_flashees"].get((gx, gy))
+
+        if etat_c is None:
+            pygame.draw.rect(ecran, ASPHALTE, r_int)
+            pygame.draw.line(ecran, (50, 52, 60), (px + 4, py + 2), (px + tc - 5, py + 2))
+            if self.cellule_survol == (gx, gy):
+                c_bord = VERT_RADAR if self.mode_radar else CYAN
+                pygame.draw.rect(ecran, c_bord, r_int, 2, border_radius=3)
+            return
+
+        if etat_c == "vide":
+            pygame.draw.rect(ecran, ASPHALTE_CLAIR, r_int)
+            m = tc // 4
+            pygame.draw.line(ecran, GRIS_SOMBRE, (px + m, py + m), (px + tc - m, py + tc - m), 2)
+            pygame.draw.line(ecran, GRIS_SOMBRE, (px + tc - m, py + m), (px + m, py + tc - m), 2)
+            return
+
+        id_v = self.partie["parking"][gy][gx]
+        nom_v = self.partie["vehicules"][id_v]["nom"] if id_v in self.partie["vehicules"] else ""
+        c_v = COULEURS_V.get(nom_v, ROUGE)
+
+        if etat_c == "touche":
+            pygame.draw.rect(ecran, c_v, r_int)
+            pygame.draw.rect(ecran, ORANGE, r_int, 2, border_radius=2)
+        elif etat_c == "epave":
+            c_sombre = tuple(max(0, c // 2) for c in c_v)
+            pygame.draw.rect(ecran, c_sombre, r_int)
+            pygame.draw.line(ecran, ROUGE, (px + 4, py + 4), (px + tc - 5, py + tc - 5), 2)
+            pygame.draw.line(ecran, ROUGE, (px + tc - 5, py + 4), (px + 4, py + tc - 5), 2)
+            pygame.draw.rect(ecran, ROUGE, r_int, 2, border_radius=2)
+
+    def dessiner_jeu(self):
+        ecran, t, tc = self.ecran, self.partie["taille"], self.tc
+        ecran.fill(NOIR)
+        pos = pygame.mouse.get_pos()
+
+                      pygame.quit()
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
@@ -398,80 +471,7 @@ class TraqueUrbaine:
         ecran.fill(NOIR)
         for p in self.parts_menu:
             pygame.draw.circle(ecran, (p["a"], p["a"], p["a"] + 10), (int(p["x"]), int(p["y"])), p["t"])
-
-        for i in range(8):
-            yy = (i * 120 + int(self.menu_timer * 30)) % (HAUTEUR + 100) - 50
-            pygame.draw.rect(ecran, (25, 27, 32), (LARGEUR // 2 - 3, yy, 6, 40))
-
-        texte_centre(ecran, self.p_titre, "TRAQUE URBAINE", 100, CYAN)
-        texte_centre(ecran, self.p_normale, "Détection Tactique sur Grille de Parking", 160, GRIS)
-        pygame.draw.line(ecran, CYAN_SOMBRE, (LARGEUR // 2 - 200, 195), (LARGEUR // 2 + 200, 195), 1)
-
-        pos = pygame.mouse.get_pos()
-        r1 = pygame.Rect(LARGEUR // 2 - 200, 240, 400, 60)
-        self.boutons["rallye"] = dessiner_bouton(ecran, self.p_grande, "RALLYE URBAIN (5x5)", r1, (20, 50, 30), VERT, r1.collidepoint(pos))
-
-        r2 = pygame.Rect(LARGEUR // 2 - 200, 320, 400, 60)
-        self.boutons["grand_prix"] = dessiner_bouton(ecran, self.p_grande, "GRAND PRIX (8x8)", r2, (50, 40, 15), JAUNE, r2.collidepoint(pos), JAUNE)
-
-        r_rec = pygame.Rect(LARGEUR // 2 - 180, 410, 360, 110)
-        pygame.draw.rect(ecran, PANNEAU_BG, r_rec, border_radius=10)
-        pygame.draw.rect(ecran, PANNEAU_BORD, r_rec, 1, border_radius=10)
-        texte_centre(ecran, self.p_normale, "MEILLEURS SCORES", 422, CYAN)
-        rec_r = self.records.get("rallye")
-        rec_gp = self.records.get("grand_prix")
-        texte_centre(ecran, self.p_petite, f"Rallye : {rec_r if rec_r is not None else '---'} scans", 455, BLANC)
-        texte_centre(ecran, self.p_petite, f"Grand Prix : {rec_gp if rec_gp is not None else '---'} scans", 480, BLANC)
-
-        r_son = pygame.Rect(LARGEUR // 2 - 180, 550, 170, 38)
-        self.boutons["son"] = dessiner_bouton(ecran, self.p_petite, f"Son : {'ON' if self.son_actif else 'OFF'}", r_son, PANNEAU_BG, GRIS_SOMBRE, r_son.collidepoint(pos))
-
-        r_reset = pygame.Rect(LARGEUR // 2 + 10, 550, 170, 38)
-        self.boutons["reset"] = dessiner_bouton(ecran, self.p_petite, "Reset Records", r_reset, PANNEAU_BG, GRIS_SOMBRE, r_reset.collidepoint(pos))
-        texte_centre(ecran, self.p_petite, "by Erwan — 2026", 740, (45, 48, 55))
-
-    def _dessiner_cellule(self, gx, gy):
-        ecran, tc = self.ecran, self.tc
-        px = self.grille_x + gx * tc
-        py = self.grille_y + gy * tc
-        r_int = pygame.Rect(px + 2, py + 2, tc - 4, tc - 4)
-        etat_c = self.partie["cases_flashees"].get((gx, gy))
-
-        if etat_c is None:
-            pygame.draw.rect(ecran, ASPHALTE, r_int)
-            pygame.draw.line(ecran, (50, 52, 60), (px + 4, py + 2), (px + tc - 5, py + 2))
-            if self.cellule_survol == (gx, gy):
-                c_bord = VERT_RADAR if self.mode_radar else CYAN
-                pygame.draw.rect(ecran, c_bord, r_int, 2, border_radius=3)
-            return
-
-        if etat_c == "vide":
-            pygame.draw.rect(ecran, ASPHALTE_CLAIR, r_int)
-            m = tc // 4
-            pygame.draw.line(ecran, GRIS_SOMBRE, (px + m, py + m), (px + tc - m, py + tc - m), 2)
-            pygame.draw.line(ecran, GRIS_SOMBRE, (px + tc - m, py + m), (px + m, py + tc - m), 2)
-            return
-
-        id_v = self.partie["parking"][gy][gx]
-        nom_v = self.partie["vehicules"][id_v]["nom"] if id_v in self.partie["vehicules"] else ""
-        c_v = COULEURS_V.get(nom_v, ROUGE)
-
-        if etat_c == "touche":
-            pygame.draw.rect(ecran, c_v, r_int)
-            pygame.draw.rect(ecran, ORANGE, r_int, 2, border_radius=2)
-        elif etat_c == "epave":
-            c_sombre = tuple(max(0, c // 2) for c in c_v)
-            pygame.draw.rect(ecran, c_sombre, r_int)
-            pygame.draw.line(ecran, ROUGE, (px + 4, py + 4), (px + tc - 5, py + tc - 5), 2)
-            pygame.draw.line(ecran, ROUGE, (px + tc - 5, py + 4), (px + 4, py + tc - 5), 2)
-            pygame.draw.rect(ecran, ROUGE, r_int, 2, border_radius=2)
-
-    def dessiner_jeu(self):
-        ecran, t, tc = self.ecran, self.partie["taille"], self.tc
-        ecran.fill(NOIR)
-        pos = pygame.mouse.get_pos()
-
-        zone = pygame.Rect(self.grille_x - 4, self.grille_y - 4, tc * t + 8, tc * t + 8)
+  zone = pygame.Rect(self.grille_x - 4, self.grille_y - 4, tc * t + 8, tc * t + 8)
         pygame.draw.rect(ecran, (20, 22, 26), zone, border_radius=6)
         pygame.draw.rect(ecran, JAUNE, zone, 2, border_radius=6)
 
