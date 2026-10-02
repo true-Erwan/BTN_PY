@@ -521,10 +521,27 @@ class TraqueUrbaine:
                 ecran.blit(txt_c, (self.grille_x + cx * tc + tc // 2 - txt_c.get_width() // 2,
                                    self.grille_y + cy * tc + tc // 2 - txt_c.get_height() // 2))
             else:
-                for (ax, ay), occ in ri["adjacents"].items():
-                    c_pt = VERT_RADAR if occ else (120, 40, 40)
-                    pygame.draw.circle(ecran, c_pt, (self.grille_x + ax * tc + tc // 2, self.grille_y + ay * tc + tc // 2), 5 if occ else 3)
-                pygame.draw.rect(ecran, JAUNE, (self.grille_x + cx * tc + 1, self.grille_y + cy * tc + 1, tc - 2, tc - 2), 2)
+                surf_zone = pygame.Surface((tc, tc), pygame.SRCALPHA)
+                surf_zone.fill((0, 255, 100, 15))
+                for zx, zy in ri["zone"]:
+                    ecran.blit(surf_zone, (self.grille_x + zx * tc, self.grille_y + zy * tc))
+
+                surf_occ = pygame.Surface((tc, tc), pygame.SRCALPHA)
+                surf_occ.fill((0, 255, 130, 80))
+
+                cases_occ = ri.get("cases_occupees", [])
+                if not cases_occ:
+                    cases_occ = [c for c, occ in ri.get("adjacents", {}).items() if occ]
+                    if (cx, cy) not in cases_occ:
+                        cases_occ.append((cx, cy))
+
+                for ox, oy in cases_occ:
+                    ecran.blit(surf_occ, (self.grille_x + ox * tc, self.grille_y + oy * tc))
+                    pygame.draw.rect(ecran, VERT_RADAR,
+                                     (self.grille_x + ox * tc + 2, self.grille_y + oy * tc + 2, tc - 4, tc - 4), 2, border_radius=3)
+
+                pygame.draw.rect(ecran, JAUNE,
+                                 (self.grille_x + cx * tc + 1, self.grille_y + cy * tc + 1, tc - 2, tc - 2), 2, border_radius=4)
 
         for ping in self.anim_pings:
             ratio = ping["t"] / ping["dur"]

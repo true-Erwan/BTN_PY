@@ -148,8 +148,9 @@ def scanner_zone(partie, x, y):
     t, p = partie["taille"], partie["parking"]
     zone = [(x + dx, y + dy) for dy in (-1, 0, 1) for dx in (-1, 0, 1) if 0 <= x + dx < t and 0 <= y + dy < t]
     if p[y][x] != 0:
+        cases_occupees = [c for c in zone if p[c[1]][c[0]] != 0]
         adjacents = {c: p[c[1]][c[0]] != 0 for c in zone if c != (x, y)}
-        return {"type": "contact", "centre": (x, y), "adjacents": adjacents, "zone": zone}
+        return {"type": "contact", "centre": (x, y), "cases_occupees": cases_occupees, "adjacents": adjacents, "zone": zone}
     compteur = sum(1 for cx, cy in zone if p[cy][cx] != 0)
     return {"type": "balayage", "centre": (x, y), "compteur": compteur, "zone": zone}
 

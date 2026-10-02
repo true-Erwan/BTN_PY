@@ -83,6 +83,9 @@ def api_radar(req: RequeteCoordonnees):
         raise HTTPException(status_code=400, detail="Radar deja utilise")
         
     if resultat.get("type") == "contact":
+        resultat["cases_occupees"] = [
+            [c[0], c[1]] for c in resultat.get("cases_occupees", [])
+        ]
         resultat["adjacents"] = {
             f"{c[0]},{c[1]}": occ for c, occ in resultat["adjacents"].items()
         }
@@ -112,6 +115,9 @@ def api_shop_action(req: RequeteBoutique):
         raise HTTPException(status_code=400, detail=resultat["erreur"])
 
     if req.action == "scan" and resultat.get("type") == "contact":
+        resultat["cases_occupees"] = [
+            [c[0], c[1]] for c in resultat.get("cases_occupees", [])
+        ]
         resultat["adjacents"] = {
             f"{c[0]},{c[1]}": occ for c, occ in resultat["adjacents"].items()
         }

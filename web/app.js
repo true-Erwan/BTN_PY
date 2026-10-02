@@ -839,14 +839,31 @@ class GameApp {
         centerEl.setAttribute('data-radar-count', info.compteur);
       }
     } else {
-      for (const key in info.adjacents) {
-        const [ax, ay] = key.split(',').map(Number);
-        const occupe = info.adjacents[key];
-        const c = document.querySelector(`.grid-cell[data-x="${ax}"][data-y="${ay}"]`);
-        if (c) {
-          c.classList.add('radar-echo');
-          if (occupe) c.classList.add('echo-direct');
+      info.zone.forEach(([zx, zy]) => {
+        const c = document.querySelector(`.grid-cell[data-x="${zx}"][data-y="${zy}"]`);
+        if (c) c.classList.add('radar-echo');
+      });
+
+      let casesOcc = info.cases_occupees || [];
+      if (!casesOcc || casesOcc.length === 0) {
+        casesOcc = [info.centre];
+        for (const key in info.adjacents) {
+          if (info.adjacents[key]) {
+            casesOcc.push(key.split(',').map(Number));
+          }
         }
+      }
+
+      casesOcc.forEach(([ox, oy]) => {
+        const c = document.querySelector(`.grid-cell[data-x="${ox}"][data-y="${oy}"]`);
+        if (c) {
+          c.classList.add('radar-direct-contact');
+        }
+      });
+
+      const centerEl = document.querySelector(`.grid-cell[data-x="${info.centre[0]}"][data-y="${info.centre[1]}"]`);
+      if (centerEl) {
+        centerEl.classList.add('radar-center-target');
       }
     }
   }

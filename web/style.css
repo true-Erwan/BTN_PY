@@ -877,8 +877,22 @@ button {
   box-shadow: inset 0 0 14px var(--green-glow), 0 0 10px var(--green);
 }
 
-.grid-cell.radar-echo.echo-direct {
+.grid-cell.radar-echo.echo-direct,
+.grid-cell.radar-direct-contact {
+  background: rgba(0, 255, 127, 0.3) !important;
   border: 2px solid var(--green) !important;
+  box-shadow: 0 0 16px var(--green-glow), inset 0 0 12px var(--green-glow) !important;
+  animation: radarContactPulse 1.2s infinite alternate;
+}
+
+@keyframes radarContactPulse {
+  from { box-shadow: 0 0 8px rgba(0, 255, 127, 0.5), inset 0 0 6px rgba(0, 255, 127, 0.3); }
+  to { box-shadow: 0 0 20px rgba(0, 255, 127, 0.9), inset 0 0 16px rgba(0, 255, 127, 0.6); }
+}
+
+.grid-cell.radar-center-target {
+  border: 2px solid var(--yellow) !important;
+  box-shadow: 0 0 14px var(--yellow-glow) !important;
 }
 
 .grid-cell.radar-center-badge::before {
