@@ -297,6 +297,106 @@ class TraqueUrbaine:
         pos = pygame.mouse.get_pos()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    if self.arme_active:
+                        self.arme_active = None
+                    else:
+                        self.etat = MENU
+                elif event.key == pygame.K_m:
+                    self.son_actif = not self.son_actif
+                elif event.key == pygame.K_r and self.etat == JEU and self.partie and self.partie["mode"] == "grand_prix":
+                    if not self.partie["radar_utilise"]:
+                        self.mode_radar = not self.mode_radar
+                elif event.key == pygame.K_1 and self.etat == JEU and self.partie and self.partie["mode"] == "grand_prix":
+                    self.arme_active = "scan" if self.arme_active != "scan" else None
+                    self.jouer_son("clic")
+                elif event.key == pygame.K_2 and self.etat == JEU and self.partie and self.partie["mode"] == "grand_prix":
+                    self.arme_active = "bombe_croix" if self.arme_active != "bombe_croix" else None
+                    self.jouer_son("clic")
+                elif event.key == pygame.K_3 and self.etat == JEU and self.partie and self.partie["mode"] == "grand_prix":
+                    self.arme_active = "bombe_ligne_colonne" if self.arme_active != "bombe_ligne_colonne" else None
+                    self.jouer_son("clic")
+
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if self.etat == MENU:
+                    if self.boutons.get("rallye", pygame.Rect(0, 0, 0, 0)).collidepoint(pos):
+                        self.demarrer_partie("rallye")
+                    elif self.boutons.get("grand_prix", pygame.Rect(0, 0, 0, 0)).collidepoint(pos):
+                        self.demarrer_partie("grand_prix")
+                    elif self.boutons.get("son", pygame.Rect(0, 0, 0, 0)).collidepoint(pos):
+                        self.son_actif = not self.son_actif
+                        self.jouer_son("clic")
+                    elif self.boutons.get("reset", pygame.Rect(0, 0, 0, 0)).collidepoint(pos):
+                        try:
+                            os.remove(os.path.join(os.path.dirname(os.path.abspath(__file__)), "records.json"))
+                        except OSError:
+                            pass
+                        self.records = {"rallye": None, "grand_prix": None}
+                        self.jouer_son("clic")
+
+                elif self.etat == JEU:
+                    if self.boutons.get("retour", pygame.Rect(0, 0, 0, 0)).collidepoint(pos):
+                        self.etat = MENU
+                        self.jouer_son("clic")
+                    elif self.boutons.get("shop_scan", pygame.Rect(0, 0, 0, 0)).collidepoint(pos):
+                        self.arme_active = "scan" if self.arme_active != "scan" else None
+                        self.jouer_son("clic")
+                    elif self.boutons.get("shop_croix", pygame.Rect(0, 0, 0, 0)).collidepoint(pos):
+                        self.arme_active = "bombe_croix" if self.arme_active != "bombe_croix" else None
+                        self.jouer_son("clic")
+                    elif self.boutons.get("shop_ligne", pygame.Rect(0, 0, 0, 0)).collidepoint(pos):
+                        self.arme_active = "bombe_ligne_colonne" if self.arme_active != "bombe_ligne_colonne" else None
+                        self.jouer_son("clic")
+                    else:
+                        self._clic_grille(pos)
+
+                elif self.etat == VICTOIRE:
+                    if self.boutons.get("rejouer", pygame.Rect(0, 0, 0, 0)).collidepoint(pos):
+                        self.demarrer_partie(self.partie["mode"])
+                    elif self.boutons.get("menu_btn", pygame.Rect(0, 0, 0, 0)).collidepoint(pos):
+                        self.etat = MENU
+                        self.jouer_son("clic")
+
+        if self.etat == JEU and self.partie:
+            t = self.partie["taille"]
+            gx = (pos[0] - self.grille_x) // self.tc
+            gy = (pos[1] - self.grille_y) // self.tc
+            self.cellule_survol = (gx, gy) if 0 <= gx < t and 0 <= gy < t else None
+
+    def maj(self, dt):
+        self.particules = [p for p in self.particules if p.maj()]
+        self.anim_pings = [p for p in self.anim_pings if p["t"] < p["dur"]]
+        for p in self.anim_pings:
+            p["t"] += dt
+
+        if self.flash_ecran > 0:
+            self.flash_ecran -= dt
+        if self.message_timer > 0:
+            self.message_timer -= dt
+        self.menu_timer += dt
+
+        if self.etat == VICTOIRE:
+            self.victoire_timer += dt
+            if random.random() < 0.15:
+                emettre_particules(self.particules, random.randint(200, LARGEUR - 200), random.randint(50, 150), "confetti", 3)
+
+        if self.etat == MENU:
+            for p in self.parts_menu:
+                p["x"] += p["vx"]
+                p["y"] += p["vy"]
+                if p["y"] < -5:
+                    p["y"] = HAUTEUR + 5
+                    p["x"] = random.randint(0, LARGEUR)
+
+    def dessiner_menu(self):
+        ecran = self.ecran
+        ecran.fill(NOIR)
+        for p in self.parts_menu:
+            pygame.draw.circle(ecran, (p["a"], p["a"], p["a"] + 10), (int(p["x"]), int(p["y"])), p["t"])
 
         for i in range(8):
             yy = (i * 120 + int(self.menu_timer * 30)) % (HAUTEUR + 100) - 50
@@ -370,107 +470,7 @@ class TraqueUrbaine:
         ecran.fill(NOIR)
         pos = pygame.mouse.get_pos()
 
-                      pygame.quit()
-                sys.exit()
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    if self.arme_active:
-                        self.arme_active = None
-                    else:
-                        self.etat = MENU
-                elif event.key == pygame.K_m:
-                    self.son_actif = not self.son_actif
-                elif event.key == pygame.K_r and self.etat == JEU and self.partie and self.partie["mode"] == "grand_prix":
-                    if not self.partie["radar_utilise"]:
-                        self.mode_radar = not self.mode_radar
-                elif event.key == pygame.K_1 and self.etat == JEU and self.partie and self.partie["mode"] == "grand_prix":
-                    self.arme_active = "scan" if self.arme_active != "scan" else None
-                    self.jouer_son("clic")
-                elif event.key == pygame.K_2 and self.etat == JEU and self.partie and self.partie["mode"] == "grand_prix":
-                    self.arme_active = "bombe_croix" if self.arme_active != "bombe_croix" else None
-                    self.jouer_son("clic")
-                elif event.key == pygame.K_3 and self.etat == JEU and self.partie and self.partie["mode"] == "grand_prix":
-                    self.arme_active = "bombe_ligne_colonne" if self.arme_active != "bombe_ligne_colonne" else None
-                    self.jouer_son("clic")
-
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                if self.etat == MENU:
-                    if self.boutons.get("rallye", pygame.Rect(0,0,0,0)).collidepoint(pos):
-                        self.demarrer_partie("rallye")
-                    elif self.boutons.get("grand_prix", pygame.Rect(0,0,0,0)).collidepoint(pos):
-                        self.demarrer_partie("grand_prix")
-                    elif self.boutons.get("son", pygame.Rect(0,0,0,0)).collidepoint(pos):
-                        self.son_actif = not self.son_actif
-                        self.jouer_son("clic")
-                    elif self.boutons.get("reset", pygame.Rect(0,0,0,0)).collidepoint(pos):
-                        try:
-                            os.remove(os.path.join(os.path.dirname(os.path.abspath(__file__)), "records.json"))
-                        except OSError:
-                            pass
-                        self.records = {"rallye": None, "grand_prix": None}
-                        self.jouer_son("clic")
-
-                elif self.etat == JEU:
-                    if self.boutons.get("retour", pygame.Rect(0,0,0,0)).collidepoint(pos):
-                        self.etat = MENU
-                        self.jouer_son("clic")
-                    elif self.boutons.get("shop_scan", pygame.Rect(0,0,0,0)).collidepoint(pos):
-                        self.arme_active = "scan" if self.arme_active != "scan" else None
-                        self.jouer_son("clic")
-                    elif self.boutons.get("shop_croix", pygame.Rect(0,0,0,0)).collidepoint(pos):
-                        self.arme_active = "bombe_croix" if self.arme_active != "bombe_croix" else None
-                        self.jouer_son("clic")
-                    elif self.boutons.get("shop_ligne", pygame.Rect(0,0,0,0)).collidepoint(pos):
-                        self.arme_active = "bombe_ligne_colonne" if self.arme_active != "bombe_ligne_colonne" else None
-                        self.jouer_son("clic")
-                    else:
-                        self._clic_grille(pos)
-
-                elif self.etat == VICTOIRE:
-                    if self.boutons.get("rejouer", pygame.Rect(0,0,0,0)).collidepoint(pos):
-                        self.demarrer_partie(self.partie["mode"])
-                    elif self.boutons.get("menu_btn", pygame.Rect(0,0,0,0)).collidepoint(pos):
-                        self.etat = MENU
-                        self.jouer_son("clic")
-
-        if self.etat == JEU and self.partie:
-            t = self.partie["taille"]
-            gx = (pos[0] - self.grille_x) // self.tc
-            gy = (pos[1] - self.grille_y) // self.tc
-            self.cellule_survol = (gx, gy) if 0 <= gx < t and 0 <= gy < t else None
-
-    def maj(self, dt):
-        self.particules = [p for p in self.particules if p.maj()]
-        self.anim_pings = [p for p in self.anim_pings if p["t"] < p["dur"]]
-        for p in self.anim_pings:
-            p["t"] += dt
-
-        if self.flash_ecran > 0:
-            self.flash_ecran -= dt
-        if self.message_timer > 0:
-            self.message_timer -= dt
-        self.menu_timer += dt
-
-        if self.etat == VICTOIRE:
-            self.victoire_timer += dt
-            if random.random() < 0.15:
-                emettre_particules(self.particules, random.randint(200, LARGEUR - 200), random.randint(50, 150), "confetti", 3)
-
-        if self.etat == MENU:
-            for p in self.parts_menu:
-                p["x"] += p["vx"]
-                p["y"] += p["vy"]
-                if p["y"] < -5:
-                    p["y"] = HAUTEUR + 5
-                    p["x"] = random.randint(0, LARGEUR)
-
-    def dessiner_menu(self):
-        ecran = self.ecran
-        ecran.fill(NOIR)
-        for p in self.parts_menu:
-            pygame.draw.circle(ecran, (p["a"], p["a"], p["a"] + 10), (int(p["x"]), int(p["y"])), p["t"])
-  zone = pygame.Rect(self.grille_x - 4, self.grille_y - 4, tc * t + 8, tc * t + 8)
+        zone = pygame.Rect(self.grille_x - 4, self.grille_y - 4, tc * t + 8, tc * t + 8)
         pygame.draw.rect(ecran, (20, 22, 26), zone, border_radius=6)
         pygame.draw.rect(ecran, JAUNE, zone, 2, border_radius=6)
 
